@@ -10,9 +10,9 @@ public class ServerScanFactory {
 		if (type.equals(AP_SERVER_JBOSS6)) {
 			return new JBoss6AdminConsoleScan();
 		} else if (type.equals(AP_SERVER_TOMCAT6)) {
-			return new TomcatScan(6);
+			return new TomcatManagerScan();
 		} else if (type.equals(AP_SERVER_TOMCAT7)) {
-			return new TomcatScan(7);
+			return new TomcatManagerScan();
 		}
 		return null;
 	}

@@ -1,13 +1,27 @@
 package org.redcenter.scantool.apserver;
 
+import org.redcenter.excel.annotation.ExcelColumn;
+import org.redcenter.excel.annotation.ExcelSheet;
+
+@ExcelSheet
 public class ServerInfo {
 
+	@ExcelColumn
 	private String host;
+	
 	private int port;
+	
 	private String account;
+	
 	private String password;
+	
+	@ExcelColumn
 	private String type;
+	
+	@ExcelColumn
 	private boolean result;
+	
+	@ExcelColumn
 	private String remark;
 
 	public String getHost() {

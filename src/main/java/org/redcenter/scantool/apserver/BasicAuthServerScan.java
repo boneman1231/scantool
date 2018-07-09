@@ -6,29 +6,11 @@ import java.net.ConnectException;
 import org.apache.commons.codec.binary.Base64;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
-public class TomcatScan extends ServerScan {
+public abstract class BasicAuthServerScan extends ServerScan {
 
-	private String path;
-	
-	public TomcatScan(int version) throws Exception {
-		if (version == 6) {
-			path = "/manager/list";
-		} else if (version == 7) {
-			path = "/manager/text/serverinfo";
-		} else {
-			throw new Exception();
-		}
-	}
-	
-	/**
-	 * tomcat 6: http://localhost:8080/manager/list 
-	 * tomcat 7: http://localhost:8080/manager/text/serverinfo
-	 */
 	public void scan(ServerInfo serverInfo) {
-		String url = "http://" + serverInfo.getHost() + ":" + serverInfo.getPort() + "/manager/status";
-//		String url = "http://" + serverInfo.getHost() + ":" + serverInfo.getPort() + path;
+		String url = "http://" + serverInfo.getHost() + ":" + serverInfo.getPort() + getPath();
 		try {
 			// encode the authString using base64
 			String authString = serverInfo.getAccount() + ":" + serverInfo.getPassword();
@@ -42,8 +24,8 @@ public class TomcatScan extends ServerScan {
 			logger.error("not connect" + e.getMessage(), e);
 			serverInfo.setResult(false);
 			serverInfo.setRemark("not connect" + e.getMessage());
-		} catch (HttpStatusException e) {			
-			// TODO 401 403
+		} catch (HttpStatusException e) {
+			// TODO 401 not authenticate, 403 not authorized
 			logger.error("status " + e.getStatusCode(), e);
 			serverInfo.setResult(false);
 			serverInfo.setRemark("status" + e.getStatusCode());
@@ -51,4 +33,6 @@ public class TomcatScan extends ServerScan {
 			logger.error(e.getMessage(), e);
 		}
 	}
+
+	protected abstract String getPath();
 }
