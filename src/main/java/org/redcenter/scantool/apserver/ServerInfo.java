@@ -8,21 +8,35 @@ public class ServerInfo {
 
 	@ExcelColumn
 	private String host;
-	
+
 	private int port;
-	
+
 	private String account;
-	
+
 	private String password;
-	
+
 	@ExcelColumn
 	private String type;
-	
+
+	/**
+	 * true if issue found
+	 */
 	@ExcelColumn
 	private boolean result;
-	
+
 	@ExcelColumn
 	private String remark;
+
+	public ServerInfo() {
+	}
+
+	public ServerInfo(ServerInfo info) {
+		this.host = info.getHost();
+		this.port = info.getPort();
+		this.type = info.getType();
+		this.result = info.isResult();
+		this.remark = info.getRemark();
+	}
 
 	public String getHost() {
 		return host;
@@ -78,5 +92,11 @@ public class ServerInfo {
 
 	public void setRemark(String remark) {
 		this.remark = remark;
+	}
+
+	@Override
+	public String toString() {
+		return "ServerInfo [host=" + host + ", port=" + port + ", account=" + account + ", password=" + password
+				+ ", type=" + type + ", result=" + result + ", remark=" + remark + "]";
 	}
 }

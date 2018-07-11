@@ -5,6 +5,7 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 
 import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -16,7 +17,8 @@ public class JBoss6AdminConsoleScan extends ServerScan {
 	/**
 	 * login_form=login_form&login_form:name=admin&login_form:password=admin&login_form:submit=Login&javax.faces.ViewState=
 	 */
-	public void scan(ServerInfo serverInfo) {
+	protected void internalScan(ServerInfo serverInfo) {
+		String msg;
 //		String url = "http://localhost:8080/admin-console/login.seam;jsessionid=4416F53DDE1DBC8081CDBDCDD1666FB0";
 		String url = "http://" + serverInfo.getHost() + ":" + serverInfo.getPort() + "/admin-console/login.seam";
 		try {
@@ -33,27 +35,39 @@ public class JBoss6AdminConsoleScan extends ServerScan {
 
 			if (doc == null) {
 				serverInfo.setResult(false);
-				serverInfo.setRemark("no weak password");
+				msg = "no weak password";				
 			} else {
 				// authorized html: <li> : <a href="/admin-console/secure/summary.seam?>
 				Elements elements = doc.select("a[href*=/admin-console/secure/summary.seam?]");
 				if (elements.isEmpty()) {
 					serverInfo.setResult(false);
-					serverInfo.setRemark("no weak password");
+					msg = "no weak password";
 				} else {
 					serverInfo.setResult(true);
-					serverInfo.setRemark("weak password");
+					msg = "find weak password";
 				}
-			}
+			}			
+			
+			logger.info(msg);
+			processResult(serverInfo, msg);						
 		} catch (ConnectException e) {
-			logger.error("not connect"+e.getMessage(), e);
+			msg = "Connection fail: " + e.getMessage();
+			logger.debug(msg, e);
 			serverInfo.setResult(false);
-			serverInfo.setRemark("not connect"+e.getMessage());
+			processResult(serverInfo, msg);
 		} catch (SocketTimeoutException e) {
-			// TODO consider timeout for init
-			logger.error("timeout"+e.getMessage(), e);			
+			// consider timeout for admin console initialize			
+			msg = "Connection timeout: " + e.getMessage();
+			logger.debug(msg, e);
+			serverInfo.setResult(true); // not complete scan
+			processResult(serverInfo, msg);
+		} catch (HttpStatusException e) {
+			handleException(e, serverInfo);
 		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
+			msg = "Not complete scan: " + e.getMessage();
+			logger.error(msg, e);
+			serverInfo.setResult(true); // not complete scan
+			processResult(serverInfo, msg);
 		}
 	}
 }

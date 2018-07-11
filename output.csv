@@ -1,0 +1,3 @@
+Host,Type,Result,Remark,
+localhost,TOMCAT6,true,[AP server TOMCAT6 for account admin with port 8080] find weak password,
+localhost,TOMCAT7,true,[AP server TOMCAT6 for account admin with port 8080] find weak password[AP server TOMCAT7 for account admin with port 8080] find weak password,

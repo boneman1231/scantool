@@ -9,7 +9,8 @@ import org.jsoup.Jsoup;
 
 public abstract class BasicAuthServerScan extends ServerScan {
 
-	public void scan(ServerInfo serverInfo) {
+	protected void internalScan(ServerInfo serverInfo) {
+		String msg;
 		String url = "http://" + serverInfo.getHost() + ":" + serverInfo.getPort() + getPath();
 		try {
 			// encode the authString using base64
@@ -17,20 +18,23 @@ public abstract class BasicAuthServerScan extends ServerScan {
 			String encodedString = new String(Base64.encodeBase64(authString.getBytes()));
 			Jsoup.connect(url).header("Authorization", "Basic " + encodedString).get();
 
+			msg = "find weak password";
+			logger.info(msg);
 			serverInfo.setResult(true);
-			serverInfo.setRemark("weak password");
-			logger.info("ok");
+			processResult(serverInfo, msg);
 		} catch (ConnectException e) {
-			logger.error("not connect" + e.getMessage(), e);
+			msg = "Connection fail: " + e.getMessage();
+			logger.debug(msg, e);
 			serverInfo.setResult(false);
-			serverInfo.setRemark("not connect" + e.getMessage());
+//			remark.append(msg);
+//			serverInfo.setRemark(remark.toString());
 		} catch (HttpStatusException e) {
-			// TODO 401 not authenticate, 403 not authorized
-			logger.error("status " + e.getStatusCode(), e);
-			serverInfo.setResult(false);
-			serverInfo.setRemark("status" + e.getStatusCode());
+			handleException(e, serverInfo);
 		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
+			msg = e.getMessage();
+			logger.error(msg, e);
+			serverInfo.setResult(true); // not complete scan
+			processResult(serverInfo, msg);
 		}
 	}
 
