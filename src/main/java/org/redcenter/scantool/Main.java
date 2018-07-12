@@ -65,6 +65,9 @@ public class Main {
 						for (Entry<String, String> entry : authMapping.entrySet()) {
 							serverInfo.setAccount(entry.getKey());
 							serverInfo.setPassword(entry.getValue());
+							serverInfo.setResult(true);
+							serverInfo.setRemark("");
+							
 							serverScan.scan(serverInfo);
 							if (serverInfo.isResult()) {
 								resultRecords.add(new ServerInfo(serverInfo));

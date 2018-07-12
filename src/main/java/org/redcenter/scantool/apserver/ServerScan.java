@@ -20,17 +20,19 @@ public abstract class ServerScan {
 
 	protected abstract void internalScan(ServerInfo serverInfo);
 
-	protected void processResult(ServerInfo info, String remark) {
-		// set remark only if find issue
-		if (info.isResult() && basicInfo != null) {
+	protected void processRemark(ServerInfo info, String remark) {
+		info.setRemark(basicInfo + remark);
+		
+		// TODO set remark only if find issue
+//		if (info.isResult() && basicInfo != null) {
 //			info.setRemark(basicInfo + remark);
 //			if (info.getRemark() != null) {			
 //				info.setRemark(info.getRemark() + basicInfo + remark);
 //			}
-		}
+//		}
 	}
 
-	protected void handleException(HttpStatusException ex, ServerInfo serverInfo) {
+	protected void handleHttpException(HttpStatusException ex, ServerInfo serverInfo) {
 		String msg;
 		if (ex.getStatusCode() == 401) {
 			msg = "Not authenticated by HTTP status: " + ex.getStatusCode() + " , " + ex.getMessage();
@@ -43,7 +45,6 @@ public abstract class ServerScan {
 		}
 		logger.debug(msg, ex);
 		serverInfo.setResult(false);
-		processResult(serverInfo, msg);
-
+		processRemark(serverInfo, msg);
 	}
 }

@@ -96,7 +96,7 @@ public class ServerInfo {
 
 	@Override
 	public String toString() {
-		return "ServerInfo [host=" + host + ", port=" + port + ", account=" + account + ", password=" + password
+		return "ServerInfo [host=" + host + ", port=" + port + ", account=" + account 
 				+ ", type=" + type + ", result=" + result + ", remark=" + remark + "]";
 	}
 }

@@ -35,39 +35,39 @@ public class JBoss6AdminConsoleScan extends ServerScan {
 
 			if (doc == null) {
 				serverInfo.setResult(false);
-				msg = "no weak password";				
+				msg = "no weak password for " + basicInfo;				
 			} else {
 				// authorized html: <li> : <a href="/admin-console/secure/summary.seam?>
 				Elements elements = doc.select("a[href*=/admin-console/secure/summary.seam?]");
 				if (elements.isEmpty()) {
 					serverInfo.setResult(false);
-					msg = "no weak password";
+					msg = "no weak password for " + basicInfo;
 				} else {
 					serverInfo.setResult(true);
-					msg = "find weak password";
+					msg = "find weak password for " + basicInfo;
 				}
 			}			
 			
 			logger.info(msg);
-			processResult(serverInfo, msg);						
+			processRemark(serverInfo, msg);						
 		} catch (ConnectException e) {
 			msg = "Connection fail: " + e.getMessage();
 			logger.debug(msg, e);
 			serverInfo.setResult(false);
-			processResult(serverInfo, msg);
+			processRemark(serverInfo, msg);
 		} catch (SocketTimeoutException e) {
 			// consider timeout for admin console initialize			
 			msg = "Connection timeout: " + e.getMessage();
 			logger.debug(msg, e);
 			serverInfo.setResult(true); // not complete scan
-			processResult(serverInfo, msg);
+			processRemark(serverInfo, msg);
 		} catch (HttpStatusException e) {
-			handleException(e, serverInfo);
+			handleHttpException(e, serverInfo);
 		} catch (IOException e) {
 			msg = "Not complete scan: " + e.getMessage();
 			logger.error(msg, e);
 			serverInfo.setResult(true); // not complete scan
-			processResult(serverInfo, msg);
+			processRemark(serverInfo, msg);
 		}
 	}
 }
