@@ -35,8 +35,9 @@ public class ServerScanFactory {
 				AP_SERVER_TOMCAT7, 
 				AP_SERVER_JBOSS6, 
 				AP_SERVER_JBOSS7, 
-				AP_SERVER_WILDFLY8,
+//				AP_SERVER_WILDFLY8,
 //				AP_SERVER_WILDFLY9, 
-				AP_SERVER_WILDFLY10 };
+//				AP_SERVER_WILDFLY10 
+				};
 	}
 }

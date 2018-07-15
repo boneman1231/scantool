@@ -1,12 +1,9 @@
 package org.redcenter.scantool;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.redcenter.excel.CsvReader;
 import org.redcenter.excel.CsvWriter;
@@ -16,31 +13,31 @@ import org.redcenter.scantool.apserver.ServerScanFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 
 public class Main {
 	private static Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
 	public static void main(String[] args) throws Exception {
-		// if (args == null || args.length == 0) {
-		// ServerInfo info = new ServerInfo();
-		// info.setHost("localhost");
-		// info.setPort(8080);
-		// info.setAccount("admin");
-		// info.setPassword("adm2in");
-		//
-		// ServerScan scan =
-		// ServerScanFactory.getServerScan(ServerScanFactory.AP_SERVER_TOMCAT7);
-		// scan.scan(info);
-		// System.out.println();
-		// }
+		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+		context.reset();
+		try {
+			JoranConfigurator configurator = new JoranConfigurator();
+			configurator.setContext(context);
+			configurator.doConfigure("./config/logback.xml");
+		} catch (JoranException je) {
+			// StatusPrinter will handle this
+		}
+		StatusPrinter.printInCaseOfErrorsOrWarnings(context);		
 
 		try {
 			// read config
 			ServerConfigManager configManager = new ServerConfigManager();
 			Map<String, List<Integer>> portMapping = configManager.getMapping();
 			AuthManager authManager = new AuthManager();
-			Map<String, String> authMapping = authManager.getMapping();
 
 			// read input
 			File file = new File("input.csv");
@@ -54,7 +51,7 @@ public class Main {
 				// by server type
 				String[] serverTypes = ServerScanFactory.getApServers();
 				for (String serverType : serverTypes) {
-					serverInfo.setType(serverType);;
+					serverInfo.setType(serverType);
 					LOGGER.info("Scan host " + serverInfo.getHost() + " for AP server " + serverInfo.getType());
 					ServerScan serverScan = ServerScanFactory.getServerScan(serverType);
 
@@ -62,17 +59,7 @@ public class Main {
 					List<Integer> ports = portMapping.get(serverType);
 					for (Integer port : ports) {
 						serverInfo.setPort(port);
-						for (Entry<String, String> entry : authMapping.entrySet()) {
-							serverInfo.setAccount(entry.getKey());
-							serverInfo.setPassword(entry.getValue());
-							serverInfo.setResult(true);
-							serverInfo.setRemark("");
-							
-							serverScan.scan(serverInfo);
-							if (serverInfo.isResult()) {
-								resultRecords.add(new ServerInfo(serverInfo));
-							}
-						}
+						scanByAccount(serverInfo, serverScan, resultRecords, authManager);
 					}
 				}
 			}
@@ -82,11 +69,12 @@ public class Main {
 			CsvWriter<ServerInfo> w = new CsvWriter<ServerInfo>(outputFile);
 			w.write(resultRecords, true);
 			w.close();
-			
-//			Writer writer = new FileWriter("output.csv");
-//			StatefulBeanToCsvBuilder<ServerInfo> beanToCsv = StatefulBeanToCsvBuilder(writer).build();
-//			beanToCsv.write(records);
-//			writer.close();
+
+			// Writer writer = new FileWriter("output.csv");
+			// StatefulBeanToCsvBuilder<ServerInfo> beanToCsv =
+			// StatefulBeanToCsvBuilder(writer).build();
+			// beanToCsv.write(records);
+			// writer.close();
 
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
@@ -95,4 +83,21 @@ public class Main {
 		LOGGER.info("End");
 	}
 
+	private static void scanByAccount(ServerInfo serverInfo, ServerScan serverScan, List<ServerInfo> resultRecords,
+			AuthManager authManager) {
+		for (String user : authManager.getUserList()) {
+			for (String pwd : authManager.getPwdList()) {
+				serverInfo.setAccount(user);
+				serverInfo.setPassword(pwd);
+				serverInfo.setResult(true);
+				serverInfo.setRemark("");
+
+				serverScan.scan(serverInfo);
+				if (serverInfo.isResult()) {
+					resultRecords.add(new ServerInfo(serverInfo));
+					return; // return if account and password found
+				}
+			}
+		}
+	}
 }

@@ -35,20 +35,20 @@ public class JBoss6AdminConsoleScan extends ServerScan {
 
 			if (doc == null) {
 				serverInfo.setResult(false);
-				msg = "no weak password for " + basicInfo;				
+				msg = "no weak password";				
 			} else {
 				// authorized html: <li> : <a href="/admin-console/secure/summary.seam?>
 				Elements elements = doc.select("a[href*=/admin-console/secure/summary.seam?]");
 				if (elements.isEmpty()) {
 					serverInfo.setResult(false);
-					msg = "no weak password for " + basicInfo;
+					msg = "no weak password";
 				} else {
 					serverInfo.setResult(true);
-					msg = "find weak password for " + basicInfo;
+					msg = "find weak password";
 				}
 			}			
 			
-			logger.info(msg);
+			logger.info(basicInfo + msg);
 			processRemark(serverInfo, msg);						
 		} catch (ConnectException e) {
 			msg = "Connection fail: " + e.getMessage();

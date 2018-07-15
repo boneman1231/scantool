@@ -23,13 +23,13 @@ public abstract class BasicAuthServerScan extends ServerScan {
 
 			if (processResult(doc, url)) {
 				serverInfo.setResult(true);
-				msg = "find weak password for " + basicInfo;
+				msg = "find weak password";
 			} else {
 				serverInfo.setResult(false);
-				msg = "no weak password for " + basicInfo;
+				msg = "no weak password";
 			}
 			
-			logger.info(msg);
+			logger.info(basicInfo + msg);
 			processRemark(serverInfo, msg);
 		} catch (ConnectException e) {
 			msg = "Connection fail: " + e.getMessage();

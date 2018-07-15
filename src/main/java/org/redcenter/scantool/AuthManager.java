@@ -1,37 +1,52 @@
 package org.redcenter.scantool;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class AuthManager {
-	private static final String PATH = "./config/auth.properties";
-	private Map<String, String> mapping = new HashMap<>();
-	private Logger logger = LoggerFactory.getLogger(getClass());
+	private static final String USER_PATH = "./config/user.properties";
+	private static final String PWD_PATH = "./config/pwd.properties";
+	private List<String> userList = null;
+	private List<String> pwdList = null;
 
-	public AuthManager() {
-		Properties prop = new Properties();
-		try {
-			FileInputStream inputStream = new FileInputStream(PATH);
-			prop.load(inputStream);
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-		}
-		
-		for (final Entry<Object, Object> entry : prop.entrySet()) {
-			String pwd = decrypt((String) entry.getValue());
-			mapping.put((String) entry.getKey(), pwd);
-		}
+	public AuthManager() throws FileNotFoundException {
+		userList = getStringList(USER_PATH, false);
+		pwdList = getStringList(PWD_PATH, true);
 	}
-	
-	public Map<String, String> getMapping() {
-		return mapping;
+
+	private List<String> getStringList(String path, boolean decrypted) throws FileNotFoundException {
+		List<String> list = new ArrayList<>();
+		Scanner scanner = null;
+		try {
+			scanner = new Scanner(new File(path));
+			scanner.useDelimiter(System.lineSeparator());
+			while (scanner.hasNext()) {
+				String value = scanner.next().trim();
+				if (value.isEmpty()) {
+					continue;
+				}
+				if (decrypted) {
+					value = decrypt(value);
+				}
+				list.add(value);
+			}
+		} finally {
+			if (scanner != null) {
+				scanner.close();
+			}
+		}
+		return list;
+	}
+
+	public List<String> getUserList() {
+		return userList;
+	}
+
+	public List<String> getPwdList() {
+		return pwdList;
 	}
 
 	private String decrypt(String value) {
@@ -39,12 +54,13 @@ public class AuthManager {
 		return value;
 	}
 
-	//TODO remove
-	public static void main(String[] args) {
+	// TODO remove
+	public static void main(String[] args) throws FileNotFoundException {
 		AuthManager manager = new AuthManager();
-		Map<String, String> map = manager.getMapping();
-		for (Entry<String, String> entry : map.entrySet()) {
-			System.out.println(entry.getKey() + "=" + entry.getValue());
+		List<String> list = manager.getUserList();
+		for (String entry : list) {
+			System.out.println(entry);
 		}
+		System.out.println("end");
 	}
 }
